@@ -36,12 +36,21 @@ const itineraryClimaTemp = select('#itinerary-clima-temperatura');
 const itineraryClimaRec = select('#itinerary-clima-recomendacao');
 const itineraryFinanceiroMoeda = select('#itinerary-financeiro-moeda');
 const itineraryFinanceiroCusto = select('#itinerary-financeiro-custo');
+const btnShowDestinationMap = select('#btn-show-destination-map');
 
 // Plans History Modal Elements
 const plansModal = select('#plans-modal');
 const closePlansModal = select('#close-plans-modal');
 const plansList = select('#plans-list');
 const plansLoading = select('#plans-loading');
+
+// Map Modal Elements
+const mapModal = select('#map-modal');
+const closeMapModal = select('#close-map-modal');
+const mapMessage = select('#map-message');
+
+// Leaflet Map Instance
+let mapInstance = null;
 
 /**
  * Abre o modal de autenticação na aba correspondente.
@@ -115,7 +124,7 @@ async function loadMyPlans() {
   if (!user) return;
 
   if (plansLoading) plansLoading.style.display = 'block';
-  if (plansList) plansList.textContent = ''; // Limpeza segura
+  if (plansList) plansList.textContent = '';
 
   try {
     const idToken = await user.getIdToken();
@@ -190,12 +199,137 @@ async function loadMyPlans() {
 }
 
 /**
+ * Inicializa o mapa do Leaflet de forma segura e limpa.
+ * @param {number} lat 
+ * @param {number} lon 
+ * @param {string} title 
+ */
+function initLeafletMap(lat, lon, title = 'Localização') {
+  if (mapInstance) {
+    mapInstance.remove();
+  }
+
+  // Inicializa mapa centrado nas coordenadas
+  mapInstance = L.map('leaflet-map').setView([lat, lon], 13);
+
+  // Adiciona camada de tiles do OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(mapInstance);
+
+  // Pin principal
+  L.marker([lat, lon]).addTo(mapInstance)
+    .bindPopup(`<b>${title}</b>`)
+    .openPopup();
+
+  // Ajusta o contêiner ao tamanho correto após transição CSS
+  setTimeout(() => {
+    mapInstance.invalidateSize();
+  }, 250);
+}
+
+/**
+ * Abre o modal e busca a localização atual do usuário e pontos de interesse próximos.
+ */
+function openUserLocationMap() {
+  if (!mapModal) return;
+  mapModal.classList.add('active');
+
+  if (mapMessage) {
+    mapMessage.textContent = 'Solicitando permissão de geolocalização do navegador...';
+    mapMessage.className = 'form-message info';
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        if (mapMessage) {
+          mapMessage.textContent = 'Carregando atrações e restaurantes próximos...';
+        }
+
+        // Inicializa o mapa do usuário
+        initLeafletMap(lat, lon, 'Você está aqui!');
+
+        try {
+          // Busca pontos de interesse turísticos e restaurantes próximos (Overpass API - grátis)
+          const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];(node["tourism"](around:1500,${lat},${lon});node["amenity"="restaurant"](around:1500,${lat},${lon}););out;`;
+          const res = await fetch(overpassUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.elements) {
+              let poiCount = 0;
+              data.elements.forEach(el => {
+                if (el.lat && el.lon) {
+                  poiCount++;
+                  const name = el.tags.name || el.tags.tourism || el.tags.amenity || 'Atração';
+                  const type = el.tags.tourism ? `Atração: ${el.tags.tourism}` : `Restaurante`;
+                  
+                  // Adiciona pins para cada local de interesse encontrado
+                  L.marker([el.lat, el.lon]).addTo(mapInstance)
+                    .bindPopup(`<b>${name}</b><br>${type}`);
+                }
+              });
+              
+              if (mapMessage) {
+                mapMessage.textContent = `Encontramos ${poiCount} atrações e restaurantes em um raio de 1.5km!`;
+                mapMessage.className = 'form-message success';
+              }
+            }
+          } else {
+            if (mapMessage) {
+              mapMessage.textContent = 'Localização encontrada, mas não conseguimos carregar as atrações locais.';
+            }
+          }
+        } catch (err) {
+          console.error('Erro na Overpass API:', err);
+          if (mapMessage) {
+            mapMessage.textContent = 'Localização carregada com sucesso.';
+          }
+        }
+      },
+      (error) => {
+        console.error('Erro de Geolocalização:', error);
+        if (mapMessage) {
+          mapMessage.textContent = 'Permissão de localização negada ou indisponível.';
+          mapMessage.className = 'form-message error';
+        }
+      }
+    );
+  } else {
+    if (mapMessage) {
+      mapMessage.textContent = 'Seu navegador não suporta geolocalização.';
+      mapMessage.className = 'form-message error';
+    }
+  }
+}
+
+/**
+ * Abre o mapa no destino específico da viagem.
+ */
+function openDestinationMap(lat, lon, destino) {
+  if (!mapModal) return;
+  mapModal.classList.add('active');
+
+  if (mapMessage) {
+    mapMessage.textContent = `Mostrando mapa de ${destino}`;
+    mapMessage.className = 'form-message success';
+  }
+
+  // Inicializa mapa centrado no destino
+  initLeafletMap(lat, lon, destino);
+}
+
+/**
  * Configura as interações de clique do modal.
  */
 function setupModalEvents() {
   document.addEventListener('click', (event) => {
     const target = event.target;
     
+    // Login
     if (target.classList.contains('btn-login')) {
       event.preventDefault();
       openAuthModal('login');
@@ -204,6 +338,7 @@ function setupModalEvents() {
       }
     }
     
+    // Cadastro
     if (target.classList.contains('btn-register')) {
       event.preventDefault();
       openAuthModal('register');
@@ -212,6 +347,7 @@ function setupModalEvents() {
       }
     }
 
+    // Histórico
     if (target.classList.contains('btn-my-plans')) {
       event.preventDefault();
       const user = getCurrentUser();
@@ -225,8 +361,18 @@ function setupModalEvents() {
         mobileMenu.classList.remove('active');
       }
     }
+
+    // Localização do Usuário
+    if (target.classList.contains('btn-location')) {
+      event.preventDefault();
+      openUserLocationMap();
+      if (mobileMenu.classList.contains('active')) {
+        mobileMenu.classList.remove('active');
+      }
+    }
   });
 
+  // Fechar Modal Auth
   if (closeAuthModal) {
     closeAuthModal.addEventListener('click', closeAuthModalWindow);
   }
@@ -244,6 +390,7 @@ function setupModalEvents() {
     tabRegister.addEventListener('click', switchToRegisterTab);
   }
 
+  // Fechar Modal Histórico
   if (closePlansModal) {
     closePlansModal.addEventListener('click', closePlansModalWindow);
   }
@@ -256,6 +403,30 @@ function setupModalEvents() {
     });
   }
 
+  // Fechar Modal Mapa
+  if (closeMapModal) {
+    closeMapModal.addEventListener('click', () => {
+      if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+      }
+      mapModal.classList.remove('active');
+    });
+  }
+
+  if (mapModal) {
+    mapModal.addEventListener('click', (event) => {
+      if (event.target === mapModal) {
+        if (mapInstance) {
+          mapInstance.remove();
+          mapInstance = null;
+        }
+        mapModal.classList.remove('active');
+      }
+    });
+  }
+
+  // Form de Login
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -274,6 +445,7 @@ function setupModalEvents() {
     });
   }
 
+  // Form de Cadastro
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -349,6 +521,23 @@ function renderItinerary(plan) {
   itineraryTitle.textContent = `Meu Itinerário: ${plan.destino} (${plan.periodo})`;
   itineraryResumo.textContent = plan.resumo || '';
 
+  // Configuração do botão "Ver no Mapa" do destino sugerido
+  if (btnShowDestinationMap) {
+    if (plan.lat && plan.lon) {
+      btnShowDestinationMap.style.display = 'block';
+      
+      // Remove escutas anteriores clonando o elemento
+      const newBtn = btnShowDestinationMap.cloneNode(true);
+      btnShowDestinationMap.parentNode.replaceChild(newBtn, btnShowDestinationMap);
+      
+      newBtn.addEventListener('click', () => {
+        openDestinationMap(plan.lat, plan.lon, plan.destino);
+      });
+    } else {
+      btnShowDestinationMap.style.display = 'none';
+    }
+  }
+
   // 2. Limpar e renderizar Dicas
   itineraryDicas.textContent = '';
   if (plan.dicas_gerais && Array.isArray(plan.dicas_gerais)) {
@@ -358,7 +547,7 @@ function renderItinerary(plan) {
     });
   }
 
-  // 3. Renderizar Clima (Se disponível no plano)
+  // 3. Renderizar Clima
   if (itineraryClimaTemp && itineraryClimaRec) {
     if (plan.dados_clima) {
       itineraryClimaTemp.textContent = `Temperatura Média Estimada: ${plan.dados_clima.temperatura_media || 'N/A'}`;
@@ -369,7 +558,7 @@ function renderItinerary(plan) {
     }
   }
 
-  // 4. Renderizar Dados Financeiros (Se disponível no plano)
+  // 4. Renderizar Dados Financeiros
   if (itineraryFinanceiroMoeda && itineraryFinanceiroCusto) {
     if (plan.dados_financeiros) {
       itineraryFinanceiroMoeda.textContent = `Moeda Sugerida: ${plan.dados_financeiros.moeda_local || 'N/A'} (Levar físico ou cartão: ${plan.dados_financeiros.moeda_levar || 'N/A'})`;

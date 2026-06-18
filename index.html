@@ -15,6 +15,10 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/var.css">
     <link rel="stylesheet" href="css/skin.css">
+    
+    <!-- Leaflet.js CDNs para Mapas Interativos -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head>
 
 <body>
@@ -38,6 +42,7 @@
                 <a href="#features" class="nav-link">Recursos</a>
                 <a href="#create-plan" class="nav-link">Criar Plano</a>
                 <a href="#" class="nav-link btn-my-plans">Meus Planos</a>
+                <a href="#" class="nav-link btn-location">Localização</a>
                 <a href="#" class="btn-login">Login</a>
                 <a href="#" class="btn-register">Registro</a>
             </nav>
@@ -59,6 +64,7 @@
                 <a href="#features" class="nav-link">Recursos</a>
                 <a href="#create-plan" class="nav-link">Criar Plano</a>
                 <a href="#" class="nav-link btn-my-plans">Meus Planos</a>
+                <a href="#" class="nav-link btn-location">Localização</a>
                 <a href="#" class="btn-login">Login</a>
                 <a href="#" class="btn-register">Registro</a>
             </nav>
@@ -223,7 +229,10 @@
         <!-- Seção de Exibição do Itinerário Gerado -->
         <section id="itinerary-result" class="itinerary-section container" style="display: none; padding-top: var(--spacing-2xl); padding-bottom: var(--spacing-3xl);">
             <div class="form-card" style="background-color: var(--white); box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); padding: var(--spacing-xl); border-radius: var(--radius-xl);">
-                <h2 id="itinerary-title" class="create-plan-title" style="margin-bottom: var(--spacing-md); text-align: left;">Meu Itinerário</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                    <h2 id="itinerary-title" class="create-plan-title" style="margin-bottom: 0; text-align: left;">Meu Itinerário</h2>
+                    <button id="btn-show-destination-map" class="btn-login" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Ver no Mapa</button>
+                </div>
                 <p id="itinerary-resumo" class="hero-description" style="color: var(--text-muted); margin-bottom: var(--spacing-lg);"></p>
                 
                 <h3 class="feature-card-title" style="text-align: left; margin-bottom: var(--spacing-sm);">Dicas de Viagem</h3>
@@ -319,6 +328,19 @@
             <div id="plans-list" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 350px; overflow-y: auto; padding-right: var(--spacing-xs); margin-top: var(--spacing-md);">
                 <!-- Planos serão inseridos dinamicamente aqui -->
             </div>
+        </div>
+    </div>
+
+    <!-- Map Modal (Localização e Mapa do Destino) -->
+    <div id="map-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="map-modal-title">
+        <div class="modal-container" style="max-width: 650px; width: 95%;">
+            <button id="close-map-modal" class="modal-close-btn" aria-label="Fechar modal">&times;</button>
+            <h2 id="map-modal-title" class="modal-heading">Localização & Atrações</h2>
+            
+            <div id="map-message" class="form-message info" style="margin-bottom: var(--spacing-sm);">Carregando mapa e pontos de interesse...</div>
+            
+            <!-- Div para renderização do mapa do Leaflet -->
+            <div id="leaflet-map" style="height: 380px; width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 10;"></div>
         </div>
     </div>
 

@@ -56,6 +56,8 @@ async function getGeocodingAndWeatherAndCountry(destino) {
     }
 
     return {
+      lat,
+      lon,
       clima: weatherData ? {
         temp: Math.round(weatherData.main.temp),
         descricao: weatherData.weather[0].description,
@@ -218,6 +220,8 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
       userId: userId,
       userEmail: userEmail,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      lat: extraInfo ? extraInfo.lat : null,
+      lon: extraInfo ? extraInfo.lon : null,
       ...planoEstruturado
     };
 
