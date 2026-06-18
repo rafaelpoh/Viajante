@@ -31,6 +31,12 @@ const itineraryResumo = select('#itinerary-resumo');
 const itineraryDicas = select('#itinerary-dicas');
 const itineraryDays = select('#itinerary-days');
 
+// Itinerary Weather & Financial Elements
+const itineraryClimaTemp = select('#itinerary-clima-temperatura');
+const itineraryClimaRec = select('#itinerary-clima-recomendacao');
+const itineraryFinanceiroMoeda = select('#itinerary-financeiro-moeda');
+const itineraryFinanceiroCusto = select('#itinerary-financeiro-custo');
+
 // Plans History Modal Elements
 const plansModal = select('#plans-modal');
 const closePlansModal = select('#close-plans-modal');
@@ -139,7 +145,6 @@ async function loadMyPlans() {
     }
 
     plans.forEach(plan => {
-      // Cria o cartão compacto do plano de viagem
       const card = createElementSafe('button', {
         className: 'plan-item-card'
       });
@@ -156,7 +161,6 @@ async function loadMyPlans() {
       
       let dateString = '';
       if (plan.createdAt) {
-        // Trata data se gerada pelo Firebase Server Timestamp
         const dateObj = plan.createdAt._seconds ? new Date(plan.createdAt._seconds * 1000) : new Date(plan.createdAt);
         dateString = dateObj.toLocaleDateString('pt-BR');
       }
@@ -167,7 +171,6 @@ async function loadMyPlans() {
       card.appendChild(title);
       card.appendChild(meta);
 
-      // Evento de clique para carregar o plano detalhado
       card.addEventListener('click', () => {
         closePlansModalWindow();
         renderItinerary(plan);
@@ -193,7 +196,6 @@ function setupModalEvents() {
   document.addEventListener('click', (event) => {
     const target = event.target;
     
-    // Abrir modal de Login
     if (target.classList.contains('btn-login')) {
       event.preventDefault();
       openAuthModal('login');
@@ -202,7 +204,6 @@ function setupModalEvents() {
       }
     }
     
-    // Abrir modal de Cadastro
     if (target.classList.contains('btn-register')) {
       event.preventDefault();
       openAuthModal('register');
@@ -211,7 +212,6 @@ function setupModalEvents() {
       }
     }
 
-    // Abrir modal de Histórico (Meus Planos)
     if (target.classList.contains('btn-my-plans')) {
       event.preventDefault();
       const user = getCurrentUser();
@@ -227,7 +227,6 @@ function setupModalEvents() {
     }
   });
 
-  // Fechar Modal Auth
   if (closeAuthModal) {
     closeAuthModal.addEventListener('click', closeAuthModalWindow);
   }
@@ -245,7 +244,6 @@ function setupModalEvents() {
     tabRegister.addEventListener('click', switchToRegisterTab);
   }
 
-  // Fechar Modal Histórico
   if (closePlansModal) {
     closePlansModal.addEventListener('click', closePlansModalWindow);
   }
@@ -258,7 +256,6 @@ function setupModalEvents() {
     });
   }
 
-  // Form de Login
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -277,7 +274,6 @@ function setupModalEvents() {
     });
   }
 
-  // Form de Cadastro
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -362,7 +358,29 @@ function renderItinerary(plan) {
     });
   }
 
-  // 3. Limpar e renderizar Programação Diária
+  // 3. Renderizar Clima (Se disponível no plano)
+  if (itineraryClimaTemp && itineraryClimaRec) {
+    if (plan.dados_clima) {
+      itineraryClimaTemp.textContent = `Temperatura Média Estimada: ${plan.dados_clima.temperatura_media || 'N/A'}`;
+      itineraryClimaRec.textContent = plan.dados_clima.recomendacoes_roupa || '';
+    } else {
+      itineraryClimaTemp.textContent = 'Dados de previsão climática não vinculados.';
+      itineraryClimaRec.textContent = '';
+    }
+  }
+
+  // 4. Renderizar Dados Financeiros (Se disponível no plano)
+  if (itineraryFinanceiroMoeda && itineraryFinanceiroCusto) {
+    if (plan.dados_financeiros) {
+      itineraryFinanceiroMoeda.textContent = `Moeda Sugerida: ${plan.dados_financeiros.moeda_local || 'N/A'} (Levar físico ou cartão: ${plan.dados_financeiros.moeda_levar || 'N/A'})`;
+      itineraryFinanceiroCusto.textContent = plan.dados_financeiros.planejamento_custo || '';
+    } else {
+      itineraryFinanceiroMoeda.textContent = 'Dados de moeda e planejamento financeiro não vinculados.';
+      itineraryFinanceiroCusto.textContent = '';
+    }
+  }
+
+  // 5. Limpar e renderizar Programação Diária
   itineraryDays.textContent = '';
   if (plan.itinerario && Array.isArray(plan.itinerario)) {
     plan.itinerario.forEach(diaInfo => {

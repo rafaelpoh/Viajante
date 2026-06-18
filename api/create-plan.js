@@ -14,6 +14,63 @@ if (!admin.apps.length) {
 
 const db = admin.apps.length ? admin.firestore() : null;
 
+/**
+ * Busca dados reais de geolocalização, clima e dados do país.
+ * @param {string} destino 
+ * @returns {Promise<Object|null>}
+ */
+async function getGeocodingAndWeatherAndCountry(destino) {
+  const apiKey = process.env.OPENWEATHER_API_KEY;
+  if (!apiKey) {
+    console.warn('OPENWEATHER_API_KEY não configurada. Clima e dados geográficos serão omitidos.');
+    return null;
+  }
+
+  try {
+    // 1. Geocodificação para obter lat, lon e código do país
+    const geoUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(destino)}&limit=1&appid=${apiKey}`;
+    const geoRes = await fetch(geoUrl);
+    if (!geoRes.ok) return null;
+    const geoData = await geoRes.json();
+    if (!geoData || geoData.length === 0) return null;
+
+    const { lat, lon, country: countryCode } = geoData[0];
+
+    // 2. Buscar dados de clima em tempo real
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=pt_br&appid=${apiKey}`;
+    const weatherRes = await fetch(weatherUrl);
+    const weatherData = weatherRes.ok ? await weatherRes.json() : null;
+
+    // 3. Buscar dados do país (Moeda, Tradução do Nome, etc.)
+    const countryUrl = `https://restcountries.com/v3.1/alpha/${countryCode}`;
+    const countryRes = await fetch(countryUrl);
+    const countryData = countryRes.ok ? await countryRes.json() : null;
+
+    let moeda = { nome: "Desconhecida", simbolo: "", codigo: "" };
+    if (countryData && countryData[0] && countryData[0].currencies) {
+      const currencyKeys = Object.keys(countryData[0].currencies);
+      if (currencyKeys.length > 0) {
+        const cur = countryData[0].currencies[currencyKeys[0]];
+        moeda = { nome: cur.name, simbolo: cur.symbol || "", codigo: currencyKeys[0] };
+      }
+    }
+
+    return {
+      clima: weatherData ? {
+        temp: Math.round(weatherData.main.temp),
+        descricao: weatherData.weather[0].description,
+        umidade: weatherData.main.humidity
+      } : null,
+      moeda,
+      pais: countryData && countryData[0] && countryData[0].translations && countryData[0].translations.por ? countryData[0].translations.por.common : countryCode
+    };
+
+  } catch (error) {
+    console.error('Erro ao buscar APIs de clima/geografia:', error);
+    return null;
+  }
+}
+
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -63,10 +120,24 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // 3. Montar prompt estruturado para o Gemini
+    // 3. Buscar dados de clima e moeda reais antes de chamar o Gemini
+    const extraInfo = await getGeocodingAndWeatherAndCountry(destino);
+    let contextualDetails = '';
+    if (extraInfo) {
+      contextualDetails = `DADOS REAIS E GEOGRÁFICOS DO DESTINO:
+- País: ${extraInfo.pais}
+- Moeda Local: ${extraInfo.moeda.nome} (Código: ${extraInfo.moeda.codigo}, Símbolo: ${extraInfo.moeda.simbolo})
+${extraInfo.clima ? `- Clima atual estimado: ${extraInfo.clima.temp}°C, ${extraInfo.clima.descricao} (Umidade: ${extraInfo.clima.umidade}%)` : ''}
+
+Use estes dados para preencher as seções correspondentes de clima e finanças abaixo.`;
+    }
+
+    // 4. Montar prompt estruturado para o Gemini
     const prompt = `Crie um itinerário de viagem super detalhado para o destino: "${destino}". 
 Período da viagem: "${periodo_viagem}". 
 Perfil/Motivo da viagem: "${motivo_viagem}". 
+
+${contextualDetails}
 
 Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \`\`\`json, apenas o texto bruto do JSON) seguindo a estrutura exata abaixo:
 {
@@ -75,6 +146,15 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
   "motivo": "${motivo_viagem}",
   "resumo": "Um breve texto de introdução motivador sobre o destino.",
   "dicas_gerais": ["Dica 1", "Dica 2", "Dica 3"],
+  "dados_clima": {
+    "temperatura_media": "ex: 22°C",
+    "recomendacoes_roupa": "Recomendações detalhadas de vestuário de acordo com o clima."
+  },
+  "dados_financeiros": {
+    "moeda_local": "ex: Euro (EUR) - €",
+    "planejamento_custo": "Estimativas de gastos e um breve orçamento ideal diário sugerido para este perfil de viagem.",
+    "moeda_levar": "Indicação da moeda mais adequada que o viajante deve levar físico ou em cartão (ex: Euros)."
+  },
   "itinerario": [
     {
       "dia": 1,
@@ -88,7 +168,7 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
   ]
 }`;
 
-    // 4. Chamar a API do Gemini via HTTPS com Fallback resiliente
+    // 5. Chamar a API do Gemini via HTTPS com Fallback resiliente
     let modelName = 'gemini-3.5-flash';
     let geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
@@ -100,7 +180,6 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
       })
     });
 
-    // Se o modelo 3.5-flash estiver temporariamente congestionado (HTTP 503), fazemos fallback para o 2.5-flash
     if (geminiResponse.status === 503) {
       console.warn('Modelo gemini-3.5-flash sob alta demanda. Iniciando fallback para gemini-2.5-flash...');
       modelName = 'gemini-2.5-flash';
@@ -121,14 +200,9 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
     }
 
     const geminiData = await geminiResponse.json();
-    
-    // Extrai o texto gerado
     let responseText = geminiData.candidates[0].content.parts[0].text;
-    
-    // Limpa possíveis marcações de código markdown do JSON caso a IA tenha incluído por acidente
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
 
-    // Converte o texto da IA para objeto JSON
     let planoEstruturado;
     try {
       planoEstruturado = JSON.parse(responseText);
@@ -137,7 +211,7 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
       throw new Error('O gerador de itinerários retornou um formato inválido. Tente novamente.');
     }
 
-    // 5. Salvar o plano no Firestore
+    // 6. Salvar o plano no Firestore
     const newDocRef = db.collection('viagens').doc();
     const planoSalvar = {
       id: newDocRef.id,
@@ -149,7 +223,6 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
 
     await newDocRef.set(planoSalvar);
 
-    // Retorna o plano gerado e persistido
     return res.status(200).json(planoSalvar);
 
   } catch (error) {
