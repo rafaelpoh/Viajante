@@ -37,7 +37,7 @@
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#features" class="nav-link">Recursos</a>
                 <a href="#create-plan" class="nav-link">Criar Plano</a>
-                <a href="#" class="nav-link">Meus Planos</a>
+                <a href="#" class="nav-link btn-my-plans">Meus Planos</a>
                 <a href="#" class="btn-login">Login</a>
                 <a href="#" class="btn-register">Registro</a>
             </nav>
@@ -58,7 +58,7 @@
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#features" class="nav-link">Recursos</a>
                 <a href="#create-plan" class="nav-link">Criar Plano</a>
-                <a href="#" class="nav-link">Meus Planos</a>
+                <a href="#" class="nav-link btn-my-plans">Meus Planos</a>
                 <a href="#" class="btn-login">Login</a>
                 <a href="#" class="btn-register">Registro</a>
             </nav>
@@ -287,6 +287,21 @@
 
             <!-- Feedback de Mensagens do Modal -->
             <div id="auth-message" role="status" aria-live="polite" class="form-message"></div>
+        </div>
+    </div>
+
+    <!-- Plans Modal (Histórico de Viagens) -->
+    <div id="plans-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="plans-modal-title">
+        <div class="modal-container" style="max-width: 500px;">
+            <button id="close-plans-modal" class="modal-close-btn" aria-label="Fechar modal">&times;</button>
+            <h2 id="plans-modal-title" class="modal-heading">Meus Planos de Viagem</h2>
+            
+            <div id="plans-loading" class="form-message info" style="display: none;">Carregando histórico...</div>
+            
+            <!-- Lista de Planos Compactos -->
+            <div id="plans-list" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 350px; overflow-y: auto; padding-right: var(--spacing-xs); margin-top: var(--spacing-md);">
+                <!-- Planos serão inseridos dinamicamente aqui -->
+            </div>
         </div>
     </div>
 

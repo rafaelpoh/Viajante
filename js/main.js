@@ -13,7 +13,7 @@ const travelPlanForm = select('#travel-plan-form');
 const formMessage = select('#form-message');
 const animateElements = selectAll('.animate-fade-in-up');
 
-// Modal Elements
+// Auth Modal Elements
 const authModal = select('#auth-modal');
 const closeAuthModal = select('#close-auth-modal');
 const tabLogin = select('#tab-login');
@@ -30,6 +30,12 @@ const itineraryTitle = select('#itinerary-title');
 const itineraryResumo = select('#itinerary-resumo');
 const itineraryDicas = select('#itinerary-dicas');
 const itineraryDays = select('#itinerary-days');
+
+// Plans History Modal Elements
+const plansModal = select('#plans-modal');
+const closePlansModal = select('#close-plans-modal');
+const plansList = select('#plans-list');
+const plansLoading = select('#plans-loading');
 
 /**
  * Abre o modal de autenticação na aba correspondente.
@@ -78,12 +84,116 @@ function switchToRegisterTab() {
 }
 
 /**
+ * Abre o modal de histórico de planos.
+ */
+function openPlansModal() {
+  if (!plansModal) return;
+  plansModal.classList.add('active');
+  loadMyPlans();
+}
+
+/**
+ * Fecha o modal de histórico de planos.
+ */
+function closePlansModalWindow() {
+  if (plansModal) {
+    plansModal.classList.remove('active');
+  }
+}
+
+/**
+ * Consulta o histórico de planos de viagem do usuário no back-end.
+ */
+async function loadMyPlans() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  if (plansLoading) plansLoading.style.display = 'block';
+  if (plansList) plansList.textContent = ''; // Limpeza segura
+
+  try {
+    const idToken = await user.getIdToken();
+    const response = await fetch('/api/get-plans', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    });
+
+    if (plansLoading) plansLoading.style.display = 'none';
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Erro ao carregar os planos.');
+    }
+
+    const plans = await response.json();
+
+    if (plans.length === 0) {
+      const emptyMsg = createElementSafe('div', {
+        className: 'form-message info',
+        style: 'margin-top: var(--spacing-md);'
+      }, 'Você não tem planos de viagem para mostrar. Crie um novo plano no formulário da página!');
+      plansList.appendChild(emptyMsg);
+      return;
+    }
+
+    plans.forEach(plan => {
+      // Cria o cartão compacto do plano de viagem
+      const card = createElementSafe('button', {
+        className: 'plan-item-card'
+      });
+
+      const title = createElementSafe('div', {
+        className: 'plan-item-title'
+      }, plan.destino);
+
+      const meta = createElementSafe('div', {
+        className: 'plan-item-meta'
+      });
+
+      const periodSpan = createElementSafe('span', {}, `Período: ${plan.periodo}`);
+      
+      let dateString = '';
+      if (plan.createdAt) {
+        // Trata data se gerada pelo Firebase Server Timestamp
+        const dateObj = plan.createdAt._seconds ? new Date(plan.createdAt._seconds * 1000) : new Date(plan.createdAt);
+        dateString = dateObj.toLocaleDateString('pt-BR');
+      }
+      const dateSpan = createElementSafe('span', {}, dateString);
+
+      meta.appendChild(periodSpan);
+      meta.appendChild(dateSpan);
+      card.appendChild(title);
+      card.appendChild(meta);
+
+      // Evento de clique para carregar o plano detalhado
+      card.addEventListener('click', () => {
+        closePlansModalWindow();
+        renderItinerary(plan);
+      });
+
+      plansList.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error('Erro ao carregar histórico:', error);
+    if (plansLoading) plansLoading.style.display = 'none';
+    const errorMsg = createElementSafe('div', {
+      className: 'form-message error'
+    }, error.message || 'Houve um erro ao buscar seus planos de viagem.');
+    plansList.appendChild(errorMsg);
+  }
+}
+
+/**
  * Configura as interações de clique do modal.
  */
 function setupModalEvents() {
   document.addEventListener('click', (event) => {
     const target = event.target;
     
+    // Abrir modal de Login
     if (target.classList.contains('btn-login')) {
       event.preventDefault();
       openAuthModal('login');
@@ -92,6 +202,7 @@ function setupModalEvents() {
       }
     }
     
+    // Abrir modal de Cadastro
     if (target.classList.contains('btn-register')) {
       event.preventDefault();
       openAuthModal('register');
@@ -99,8 +210,24 @@ function setupModalEvents() {
         mobileMenu.classList.remove('active');
       }
     }
+
+    // Abrir modal de Histórico (Meus Planos)
+    if (target.classList.contains('btn-my-plans')) {
+      event.preventDefault();
+      const user = getCurrentUser();
+      if (!user) {
+        openAuthModal('login');
+        displayAuthMessage('Faça login para acessar o histórico de seus planos.', 'info');
+      } else {
+        openPlansModal();
+      }
+      if (mobileMenu.classList.contains('active')) {
+        mobileMenu.classList.remove('active');
+      }
+    }
   });
 
+  // Fechar Modal Auth
   if (closeAuthModal) {
     closeAuthModal.addEventListener('click', closeAuthModalWindow);
   }
@@ -118,6 +245,20 @@ function setupModalEvents() {
     tabRegister.addEventListener('click', switchToRegisterTab);
   }
 
+  // Fechar Modal Histórico
+  if (closePlansModal) {
+    closePlansModal.addEventListener('click', closePlansModalWindow);
+  }
+
+  if (plansModal) {
+    plansModal.addEventListener('click', (event) => {
+      if (event.target === plansModal) {
+        closePlansModalWindow();
+      }
+    });
+  }
+
+  // Form de Login
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -136,6 +277,7 @@ function setupModalEvents() {
     });
   }
 
+  // Form de Cadastro
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -281,7 +423,6 @@ function setupFormSubmission() {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // Obter o Token ID do Usuário Autenticado para Envio no Header
       const idToken = await user.getIdToken();
       
       const response = await fetch('/api/create-plan', {
@@ -302,7 +443,6 @@ function setupFormSubmission() {
       
       displayFormMessage('Seu plano de viagem foi gerado com sucesso!', 'success');
       
-      // Renderizar o plano retornado na tela
       renderItinerary(planResult);
       
       travelPlanForm.reset();

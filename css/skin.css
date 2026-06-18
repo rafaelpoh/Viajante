@@ -648,3 +648,38 @@ body {
   display: flex;
 }
 
+/* Plans History Modal Cards */
+.plan-item-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--white);
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  text-align: left;
+}
+
+.plan-item-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+}
+
+.plan-item-title {
+  font-size: 1.1rem;
+  font-weight: var(--font-semibold);
+  color: var(--text-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.plan-item-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
