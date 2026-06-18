@@ -88,24 +88,36 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
   ]
 }`;
 
-    // 4. Chamar a API do Gemini via HTTPS (método simples, rápido e sem dependências extras)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // 4. Chamar a API do Gemini via HTTPS com Fallback resiliente
+    let modelName = 'gemini-3.5-flash';
+    let geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
-    const geminiResponse = await fetch(geminiUrl, {
+    let geminiResponse = await fetch(geminiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
+        contents: [{ parts: [{ text: prompt }] }]
       })
     });
 
+    // Se o modelo 3.5-flash estiver temporariamente congestionado (HTTP 503), fazemos fallback para o 2.5-flash
+    if (geminiResponse.status === 503) {
+      console.warn('Modelo gemini-3.5-flash sob alta demanda. Iniciando fallback para gemini-2.5-flash...');
+      modelName = 'gemini-2.5-flash';
+      geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      
+      geminiResponse = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+    }
+
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      throw new Error(`Erro na API do Gemini: ${errorText}`);
+      throw new Error(`Erro na API do Gemini (${modelName}): ${errorText}`);
     }
 
     const geminiData = await geminiResponse.json();
