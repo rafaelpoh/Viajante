@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de Viagens</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Ordem de Carregamento Estrita de CSS conforme /webspecs -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/var.css">
+    <link rel="stylesheet" href="css/skin.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-container">
+            <!-- Logo -->
+            <a href="#home" class="logo" aria-label="Planejador de Viagens - Ir para a Home">
+                <svg class="logo-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                    </path>
+                </svg>
+                <span>Planejador de Viagens</span>
+            </a>
+
+            <!-- Navigation - Desktop -->
+            <nav class="nav-desktop" aria-label="Navegação Principal">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Recursos</a>
+                <a href="#create-plan" class="nav-link">Criar Plano</a>
+                <a href="#" class="nav-link">Meus Planos</a>
+                <a href="#" class="btn-login">Login</a>
+                <a href="#" class="btn-register">Registro</a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="mobile-menu-btn" aria-controls="mobile-menu" aria-expanded="false"
+                aria-label="Abrir Menu Principal">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="mobile-menu">
+            <nav class="nav-mobile" aria-label="Navegação Mobile">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Recursos</a>
+                <a href="#create-plan" class="nav-link">Criar Plano</a>
+                <a href="#" class="nav-link">Meus Planos</a>
+                <a href="#" class="btn-login">Login</a>
+                <a href="#" class="btn-register">Registro</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="container hero-container">
+                <!-- Image on Right -->
+                <div class="hero-image-wrapper">
+                    <img src="assets/hero_travel.png"
+                        alt="Viagens Incríveis e Planejadas" class="hero-img animate-fade-in-up" data-delay="0.5">
+                </div>
+
+                <!-- Text Content on Left -->
+                <div class="hero-content">
+                    <h1 class="hero-title animate-fade-in-up">
+                        Seu Planejador de Viagens Definitivo
+                    </h1>
+                    <p class="hero-description animate-fade-in-up" data-delay="0.2">
+                        Transforme a maneira como você explora o mundo com planos personalizados por IA. Descubra
+                        itinerários únicos, o clima local e muito mais.
+                    </p>
+                    <a href="#create-plan" class="btn-hero animate-fade-in-up" data-delay="0.4">
+                        Comece Sua Aventura Agora!
+                    </a>
+                </div>
+            </div>
+            <!-- Background Shapes for decoration -->
+            <div class="hero-shape-1"></div>
+            <div class="hero-shape-2"></div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="features-title">Recursos Que Você Vai Amar</h2>
+                <div class="features-grid">
+
+                    <!-- Feature 1: Criação de Planos com IA -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.879 16.121A3 3 0 1012.015 11l6.01-6.010a2 2 0 10-2.828-2.828L11 9.172a3 3 0 10-1.121 1.879M19 11h2M11 19v2M7 3H3v10l6.293 6.293a1 1 0 001.414 0L19 13.707a1 1 0 000-1.414L11.414 4.586a1 1 0 00-1.414 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Criação de Planos com IA</h3>
+                        <p class="feature-card-desc">Utilize a inteligência artificial (Gemini API) para gerar
+                            itinerários de viagem personalizados e únicos em segundos.</p>
+                    </div>
+
+                    <!-- Feature 2: Histórico de Viagens Salvas -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2zm7-9v5m-5-5h10" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Histórico de Viagens Salvas</h3>
+                        <p class="feature-card-desc">Acompanhe todos os seus planos de viagem anteriores e futuros em um
+                            só lugar, acessível a qualquer momento.</p>
+                    </div>
+
+                    <!-- Feature 3: Geolocalização Integrada -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Geolocalização Integrada</h3>
+                        <p class="feature-card-desc">Encontre pontos de interesse, restaurantes e atrações próximas ao
+                            seu destino com precisão.</p>
+                    </div>
+
+                    <!-- Feature 4: Previsão do Tempo Detalhada -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 15a4 4 0 004 4h9a5 5 0 001.677-9.982m-5.32 0a4 4 0 00-7.382 1.303A4 4 0 003 15z" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Previsão do Tempo Detalhada</h3>
+                        <p class="feature-card-desc">Prepare-se para qualquer clima com informações meteorológicas
+                            atualizadas para seus destinos.</p>
+                    </div>
+
+                    <!-- Feature 5: Dados Geográficos Completos -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 00-2-2h-1.5A2.5 2.5 0 019 13.5v-1.293m-3.414 2.586a1 1 0 11-1.414-1.414L14.586 3.586a1 1 0 011.414 0l4.293 4.293a1 1 0 010 1.414L9.414 20.414a1 1 0 01-1.414 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Dados Geográficos Completos</h3>
+                        <p class="feature-card-desc">Acesse informações detalhadas sobre países, culturas e curiosidades
+                            de seus destinos.</p>
+                    </div>
+
+                    <!-- Feature 6: Segurança e Privacidade -->
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <svg class="feature-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.928 12c.381 4.237 2.703 7.931 6.66 9.923zm10.739-6.923c.38-.285.74-.582 1.077-.899M16 12a4 4 0 10-8 0 4 4 0 008 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="feature-card-title">Segurança e Privacidade</h3>
+                        <p class="feature-card-desc">Seus dados de viagem são protegidos com as mais recentes regras de
+                            segurança e autenticação robusta (Firebase Auth, Firestore).</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Create Plan Form Section -->
+        <section id="create-plan" class="create-plan-section">
+            <div class="create-plan-container">
+                <h2 class="create-plan-title">Crie Seu Plano de Viagem Personalizado</h2>
+                <div class="form-card">
+                    <form id="travel-plan-form" class="travel-form"
+                        aria-label="Formulário de Criação de Plano de Viagem">
+                        <div class="form-group">
+                            <label for="destino" class="form-label">Destino <span class="required-star">*</span></label>
+                            <input type="text" id="destino" name="destino" placeholder="Ex: Paris, Tóquio, Bonito"
+                                required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="periodo_viagem" class="form-label">Período da Viagem <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="periodo_viagem" name="periodo_viagem"
+                                placeholder="Ex: 7 dias em Julho, Fim de semana em Março" required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="motivo_viagem" class="form-label">Motivo da Viagem <span
+                                    class="required-star">*</span></label>
+                            <textarea id="motivo_viagem" name="motivo_viagem"
+                                placeholder="Ex: Lua de mel, Aventura solo, Férias em família com crianças pequenas"
+                                required class="form-textarea"></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">
+                            Gerar Meu Plano Agora!
+                        </button>
+                    </form>
+                    <div id="form-message" role="status" aria-live="polite" class="form-message">
+                        <!-- Messages (success/error/loading) will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Exibição do Itinerário Gerado -->
+        <section id="itinerary-result" class="itinerary-section container" style="display: none; padding-top: var(--spacing-2xl); padding-bottom: var(--spacing-3xl);">
+            <div class="form-card" style="background-color: var(--white); box-shadow: var(--shadow-xl); border: 1px solid var(--border-color); padding: var(--spacing-xl); border-radius: var(--radius-xl);">
+                <h2 id="itinerary-title" class="create-plan-title" style="margin-bottom: var(--spacing-md); text-align: left;">Meu Itinerário</h2>
+                <p id="itinerary-resumo" class="hero-description" style="color: var(--text-muted); margin-bottom: var(--spacing-lg);"></p>
+                
+                <h3 class="feature-card-title" style="text-align: left; margin-bottom: var(--spacing-sm);">Dicas de Viagem</h3>
+                <ul id="itinerary-dicas" class="travel-form" style="margin-bottom: var(--spacing-xl); list-style-type: disc; padding-left: var(--spacing-lg); gap: var(--spacing-xs); color: var(--text-muted);"></ul>
+
+                <h3 class="feature-card-title" style="text-align: left; margin-bottom: var(--spacing-md);">Programação Diária</h3>
+                <div id="itinerary-days" style="display: flex; flex-direction: column; gap: var(--spacing-lg);"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <p class="footer-details">Feito com paixão por exploradores.</p>
+        </div>
+    </footer>
+
+    <!-- Auth Modal (Login & Cadastro Unificado) -->
+    <div id="auth-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-container">
+            <button id="close-auth-modal" class="modal-close-btn" aria-label="Fechar modal">&times;</button>
+            
+            <!-- Modal Tabs -->
+            <div class="modal-tabs">
+                <button id="tab-login" class="modal-tab active">Entrar</button>
+                <button id="tab-register" class="modal-tab">Cadastrar-se</button>
+            </div>
+            
+            <h2 id="modal-title" class="modal-heading">Acesse sua conta</h2>
+
+            <!-- Form de Login -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email" class="form-label">E-mail <span class="required-star">*</span></label>
+                    <input type="email" id="login-email" name="email" placeholder="seu@email.com" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="login-password" class="form-label">Senha <span class="required-star">*</span></label>
+                    <input type="password" id="login-password" name="password" placeholder="Sua senha" required class="form-input">
+                </div>
+                <button type="submit" class="btn-submit">Entrar</button>
+            </form>
+
+            <!-- Form de Cadastro -->
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-email" class="form-label">E-mail <span class="required-star">*</span></label>
+                    <input type="email" id="register-email" name="email" placeholder="seu@email.com" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="register-password" class="form-label">Senha <span class="required-star">*</span></label>
+                    <input type="password" id="register-password" name="password" placeholder="Mínimo 6 caracteres" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password" class="form-label">Confirmar Senha <span class="required-star">*</span></label>
+                    <input type="password" id="register-confirm-password" name="confirm-password" placeholder="Confirme sua senha" required class="form-input">
+                </div>
+                <button type="submit" class="btn-submit">Criar Conta</button>
+            </form>
+
+            <!-- Feedback de Mensagens do Modal -->
+            <div id="auth-message" role="status" aria-live="polite" class="form-message"></div>
+        </div>
+    </div>
+
+    <!-- Scripts deferidos e carregados como Módulo -->
+    <script type="module" src="js/main.js" defer></script>
+</body>
+</html>

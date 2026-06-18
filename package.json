@@ -1,0 +1,15 @@
+{
+  "name": "viajante-backend",
+  "version": "1.0.0",
+  "description": "Back-end serverless para o Planejador de Viagens (Viajante)",
+  "main": "api/create-plan.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.8.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
