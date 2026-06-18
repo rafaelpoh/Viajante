@@ -89,7 +89,7 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
 }`;
 
     // 4. Chamar a API do Gemini via HTTPS (método simples, rápido e sem dependências extras)
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     const geminiResponse = await fetch(geminiUrl, {
       method: 'POST',
