@@ -1,18 +1,24 @@
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
 
 // Inicializa o Firebase Admin SDK se ainda não foi inicializado
 if (!admin.apps.length) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      const serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string'
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+        : process.env.FIREBASE_SERVICE_ACCOUNT;
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+    } else {
+      console.warn('Variável de ambiente FIREBASE_SERVICE_ACCOUNT não definida.');
+    }
   } catch (error) {
-    console.error('Falha ao inicializar Firebase Admin SDK. Certifique-se de configurar a variável de ambiente FIREBASE_SERVICE_ACCOUNT.');
+    console.error('Falha ao inicializar Firebase Admin SDK. Certifique-se de configurar a variável de ambiente FIREBASE_SERVICE_ACCOUNT:', error);
   }
 }
 
-const db = admin.apps.length ? admin.firestore() : null;
+const getDb = () => (admin.apps.length ? admin.firestore() : null);
 
 /**
  * Busca dados reais de geolocalização, clima e dados do país.
@@ -28,7 +34,7 @@ async function getGeocodingAndWeatherAndCountry(destino) {
 
   try {
     // 1. Geocodificação para obter lat, lon e código do país
-    const geoUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(destino)}&limit=1&appid=${apiKey}`;
+    const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(destino)}&limit=1&appid=${apiKey}`;
     const geoRes = await fetch(geoUrl);
     if (!geoRes.ok) return null;
     const geoData = await geoRes.json();
@@ -73,20 +79,19 @@ async function getGeocodingAndWeatherAndCountry(destino) {
   }
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return res.status(455).json({ message: 'Método não permitido. Utilize POST.' });
+    return res.status(405).json({ message: 'Método não permitido. Utilize POST.' });
   }
 
   // 1. Validar Token de Autenticação do Usuário
@@ -108,17 +113,19 @@ module.exports = async (req, res) => {
   const userEmail = decodedToken.email;
 
   // 2. Extrair dados do corpo da requisição
-  const { destino, periodo_viagem, motivo_viagem } = req.body;
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const { destino, periodo_viagem, motivo_viagem } = body || {};
   if (!destino || !periodo_viagem || !motivo_viagem) {
     return res.status(400).json({ message: 'Os campos destino, periodo_viagem e motivo_viagem são obrigatórios.' });
   }
 
   if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ message: 'Configuração do servidor incompleta (GEMINI_API_KEY ausente).' });
+    return res.status(500).json({ message: 'Configuração do servidor incompleta: GEMINI_API_KEY ausente nas variáveis de ambiente da Vercel.' });
   }
 
+  const db = getDb();
   if (!db) {
-    return res.status(500).json({ message: 'Serviço de banco de dados indisponível no momento.' });
+    return res.status(500).json({ message: 'Serviço de banco de dados indisponível: FIREBASE_SERVICE_ACCOUNT ausente ou inválida nas variáveis de ambiente da Vercel.' });
   }
 
   try {
@@ -171,7 +178,7 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
 }`;
 
     // 5. Chamar a API do Gemini via HTTPS com Fallback resiliente
-    let modelName = 'gemini-3.5-flash';
+    let modelName = 'gemini-2.5-flash';
     let geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     
     let geminiResponse = await fetch(geminiUrl, {
@@ -182,9 +189,9 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
       })
     });
 
-    if (geminiResponse.status === 503) {
-      console.warn('Modelo gemini-3.5-flash sob alta demanda. Iniciando fallback para gemini-2.5-flash...');
-      modelName = 'gemini-2.5-flash';
+    if (geminiResponse.status === 404 || geminiResponse.status === 503) {
+      console.warn(`Modelo ${modelName} indisponível. Tentando gemini-1.5-flash...`);
+      modelName = 'gemini-1.5-flash';
       geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`;
       
       geminiResponse = await fetch(geminiUrl, {
@@ -233,4 +240,4 @@ Você deve responder APENAS com um objeto JSON válido (sem markdown, sem tags \
     console.error('Erro ao processar plano de viagem:', error);
     return res.status(500).json({ message: error.message || 'Erro interno ao gerar plano de viagem.' });
   }
-};
+}

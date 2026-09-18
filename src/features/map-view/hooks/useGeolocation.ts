@@ -28,9 +28,8 @@ export function useGeolocation() {
         setMessage('Buscando atrações turísticas e restaurantes próximos...');
 
         try {
-          // Consulta Overpass API gratuita para nós turísticos e restaurantes em raio de 1500m
-          const overpassUrl = `https://overpass-api.de/api/interpreter?data=[out:json];(node["tourism"](around:1500,${lat},${lon});node["amenity"="restaurant"](around:1500,${lat},${lon}););out;`;
-          const res = await fetch(overpassUrl);
+          // Consulta endpoint seguro /api/poi sem bloqueios de CORS
+          const res = await fetch(`/api/poi?lat=${lat}&lon=${lon}`);
 
           if (res.ok) {
             const data = await res.json();

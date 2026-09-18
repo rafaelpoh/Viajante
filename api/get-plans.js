@@ -1,29 +1,34 @@
-const admin = require('firebase-admin');
+import admin from 'firebase-admin';
 
 // Inicializa o Firebase Admin SDK se ainda não foi inicializado
 if (!admin.apps.length) {
   try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      const serviceAccount = typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string'
+        ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+        : process.env.FIREBASE_SERVICE_ACCOUNT;
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+    } else {
+      console.warn('Variável de ambiente FIREBASE_SERVICE_ACCOUNT não definida.');
+    }
   } catch (error) {
-    console.error('Falha ao inicializar Firebase Admin SDK. Certifique-se de configurar a variável de ambiente FIREBASE_SERVICE_ACCOUNT.');
+    console.error('Falha ao inicializar Firebase Admin SDK:', error);
   }
 }
 
-const db = admin.apps.length ? admin.firestore() : null;
+const getDb = () => (admin.apps.length ? admin.firestore() : null);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'GET') {
@@ -46,9 +51,10 @@ module.exports = async (req, res) => {
   }
 
   const userId = decodedToken.uid;
+  const db = getDb();
 
   if (!db) {
-    return res.status(500).json({ message: 'Serviço de banco de dados indisponível no momento.' });
+    return res.status(500).json({ message: 'Serviço de banco de dados indisponível: FIREBASE_SERVICE_ACCOUNT ausente ou inválida nas variáveis de ambiente da Vercel.' });
   }
 
   try {
@@ -69,4 +75,4 @@ module.exports = async (req, res) => {
     console.error('Erro ao recuperar planos de viagem:', error);
     return res.status(500).json({ message: error.message || 'Erro interno ao recuperar planos de viagem.' });
   }
-};
+}
