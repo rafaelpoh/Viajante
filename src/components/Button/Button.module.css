@@ -1,0 +1,118 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font-family: inherit;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.sizeSm {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-sm);
+}
+
+.sizeMd {
+  padding: 0.625rem 1.25rem;
+  font-size: var(--font-size-sm);
+}
+
+.sizeLg {
+  padding: 0.875rem 1.75rem;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-lg);
+}
+
+/* Variants */
+.variantPrimary {
+  background-color: var(--color-primary-600);
+  color: var(--color-text-inverted);
+  box-shadow: var(--shadow-sm);
+}
+
+.variantPrimary:hover:not(:disabled) {
+  background-color: var(--color-primary-700);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.variantPrimary:active:not(:disabled) {
+  background-color: var(--color-primary-800);
+  transform: translateY(0);
+}
+
+.variantSecondary {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-800);
+  border-color: var(--color-primary-200);
+}
+
+.variantSecondary:hover:not(:disabled) {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-900);
+}
+
+.variantAccent {
+  background-color: var(--color-accent-500);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.variantAccent:hover:not(:disabled) {
+  background-color: var(--color-accent-600);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.variantOutline {
+  background-color: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.variantOutline:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+}
+
+.variantGhost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.variantGhost:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+/* Spinner Animation */
+.spinner {
+  animation: spin 1s linear infinite;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

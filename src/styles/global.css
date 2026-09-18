@@ -1,0 +1,65 @@
+@import './tokens.css';
+@import './reset.css';
+
+/* ==========================================================================
+   SUPERFÍCIES NATIVAS DO NAVEGADOR (IMPECCABLE CRAFT FLOOR)
+   ========================================================================== */
+
+/* Seleção de Texto Personalizada */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+/* Cor do Cursor de Digitação */
+input,
+textarea {
+  caret-color: var(--color-primary);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-hover);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Indicador de Foco Acessível (Focus Ring) */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Números Tabulares para Alinhamento Preciso */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Utilitário de Contêiner Central */
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+  }
+}

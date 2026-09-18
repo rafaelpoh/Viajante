@@ -1,53 +1,70 @@
 # ✈️ Viajante — Planejador Inteligente de Viagens
 
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployment-black?style=flat-square&logo=vercel)](https://vercel.com)
+[![React 18](https://img.shields.io/badge/React-18+-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript Strict](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite Bundler](https://img.shields.io/badge/Vite-5+-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
 [![Firebase Integrated](https://img.shields.io/badge/Firebase-Integrated-orange?style=flat-square&logo=firebase)](https://firebase.google.com/)
-[![Vanilla JS](https://img.shields.io/badge/JS-Vanilla%20ES6+-yellow?style=flat-square&logo=javascript)](https://developer.mozilla.org/pt-BR/docs/Web/JavaScript)
+[![Zod Validated](https://img.shields.io/badge/Zod-Validated-3E67B1?style=flat-square&logo=zod&logoColor=white)](https://zod.dev)
+[![Leaflet Maps](https://img.shields.io/badge/Leaflet-Maps-199900?style=flat-square&logo=leaflet&logoColor=white)](https://leafletjs.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-O **Viajante** é um planejador de itinerários de viagens inteligente e dinâmico. A aplicação utiliza inteligência artificial para gerar roteiros personalizados com base em suas preferências, enriquecendo o plano com dados climáticos reais, informações geográficas e dados detalhados do país de destino.
+O **Viajante** é um planejador de viagens inteligente e dinâmico construído como uma Single Page Application (SPA) em **React 18+ com TypeScript estrito**, orientado pelo guia arquitetural `/reactspecs` e pelos princípios de excelência estética do **Impeccable**.
+
+A aplicação utiliza o **Google Gemini** para gerar itinerários detalhados dia a dia, enriquecendo o plano com dados climáticos reais da **OpenWeather API**, informações geográficas e financeiras da **REST Countries**, visualização cartográfica interativa com **Leaflet** e persistência segura na nuvem com **Firebase Auth & Firestore**.
 
 ---
 
 ## 🌟 Recursos Principais
 
-*   **Roteiros com IA (Gemini):** Geração de itinerários detalhados e personalizados de acordo com o motivo, duração e perfil da viagem.
-*   **Integração Clima & Geografia:** Consumo de dados dinâmicos das APIs do *OpenWeatherMap* e *REST Countries* para enriquecer o plano da viagem.
-*   **Autenticação de Usuários:** Login seguro integrado via *Firebase Authentication*.
-*   **Histórico de Viagens:** Salvamento automático de rotas e planos personalizados no *Cloud Firestore* para consultas futuras.
-*   **Segurança Robusta (Arquitetura Proxy/Serverless):** Chamadas de chaves sensíveis da API (Gemini/Firebase Admin) ocorrem exclusivamente no backend (Serverless Functions na Vercel), mantendo o front-end limpo e seguro.
+*   **Roteiros com IA (Gemini):** Geração de itinerários estruturados e personalizados com base no destino, duração e motivo da viagem.
+*   **Integração Clima & Geografia:** Previsão climática, recomendações de vestuário e planejamento de moeda/câmbio com dados reais.
+*   **Mapas Interativos (Leaflet / OpenStreetMap):** Visualização de destinos sugeridos e busca de atrações turísticas e restaurantes em raio de 1.5km da localização atual do usuário via Overpass API.
+*   **Autenticação & Histórico:** Cadastro/login com Firebase Auth e histórico completo de viagens salvas no Firestore.
+*   **Validação Estrita de I/O:** Esquemas do **Zod** validando as respostas das APIs em tempo de execução para máxima estabilidade e prevenção de dados corrompidos.
+*   **Segurança Serverless:** As chaves de API sensíveis (Gemini, OpenWeather, Firebase Admin) operam exclusivamente no backend serverless (`api/`).
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-O projeto foi concebido seguindo princípios de **desenvolvimento limpo**, sem o uso de empacotadores ou frameworks SPA pesados no front-end:
-
-*   **Front-end:** HTML5 Semântico, CSS3 (variáveis nativas e arquitetura limpa) e JavaScript Vanilla (ES6+ modular).
-*   **Back-end:** Serverless Functions do Node.js executadas na infraestrutura da [Vercel](https://vercel.com).
-*   **Banco de Dados & Auth:** [Google Firebase](https://firebase.google.com/) (Firestore e Auth).
-*   **Processamento de Linguagem Natural:** Google Gemini API.
+*   **Front-end:** React 18+, TypeScript (ES2022+ com `strict: true`), Vite, CSS Modules (`*.module.css`).
+*   **Design System & Craft:** Design Tokens centralizados em `src/styles/tokens.css`, superfícies nativas customizadas (`::selection`, `caret-color`, scrollbars elegantes e anel `:focus-visible`).
+*   **Cartografia:** Leaflet.js e Overpass API.
+*   **Back-end:** Serverless Functions em Node.js (Vercel).
+*   **Banco de Dados & Auth:** Google Firebase (Auth e Cloud Firestore).
+*   **IA Generativa:** Google Gemini API.
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Estrutura do Projeto (Feature-Driven & Colocation)
 
 ```text
 / (raiz)
-├── api/                  # Serverless Functions (Node.js) implantadas na Vercel
-│   └── create-plan.js    # Função para geração e persistência dos planos
-├── assets/               # Recursos estáticos (imagens, ícones)
-├── css/                  # Arquitetura CSS Modular
-│   ├── reset.css         # Reset de estilos globais
-│   ├── var.css           # Tokens de Design e Variáveis do CSS (:root)
-│   └── skin.css          # Estilização visual dos componentes e layout
-├── js/                   # Arquitetura JS Modular (ES Modules)
-│   ├── main.js           # Ponto de entrada do Front-end
-│   └── utils.js          # Helpers e utilitários reutilizáveis (DRY)
-├── index.html            # Ponto de entrada da aplicação
-├── package.json          # Configurações do Backend Serverless e dependências
-├── spec.md               # Especificação técnica e regras de desenvolvimento
-└── viajante_plano.md     # Plano geral do projeto
+├── api/                         # Serverless Functions (Node.js) implantadas na Vercel
+│   ├── create-plan.js           # Geração e persistência dos planos
+│   └── get-plans.js             # Consulta dos planos salvos por usuário
+├── public/                      # Recursos estáticos servidos pelo Vite
+│   └── assets/                  # Favicon e imagem principal do Hero
+├── src/                         # Código fonte da SPA React
+│   ├── main.tsx                 # Entrada createRoot (React.StrictMode)
+│   ├── App.tsx                  # Composição principal da aplicação
+│   ├── App.module.css           # Estilos mestre de layout
+│   ├── styles/                  # Design tokens, reset moderno e estilos globais
+│   ├── components/              # Componentes de UI genéricos (Button, Input, Modal, Icons)
+│   ├── features/                # Módulos verticais de negócio isolados
+│   │   ├── auth/                # Autenticação Firebase (login, registro, hooks)
+│   │   ├── plan-creator/        # Formulário com IA e validação Zod
+│   │   ├── itinerary/           # Exibição do roteiro, clima e programação diária
+│   │   ├── saved-plans/         # Histórico de viagens salvas no Firestore
+│   │   └── map-view/            # Mapas Leaflet e geolocalização
+│   ├── types/                   # Esquemas Zod e contratos TypeScript estritos
+│   └── utils/                   # Formatadores puros e mensagens traduzidas
+├── index.html                   # Ponto de entrada SPA do Vite
+├── package.json                 # Dependências e scripts de build
+├── PRODUCT.md                   # Registro de contexto de produto (Impeccable)
+├── spec.md                      # Especificação técnica do projeto
+├── tsconfig.json                # Configurações estritas do TypeScript
+└── vite.config.ts               # Configuração do Vite com proxy e manualChunks
 ```
 
 ---
@@ -55,51 +72,31 @@ O projeto foi concebido seguindo princípios de **desenvolvimento limpo**, sem o
 ## 🚀 Como Iniciar Localmente
 
 ### Pré-requisitos
-*   [Node.js](https://nodejs.org/) instalado.
-*   [Vercel CLI](https://vercel.com/cli) instalado globalmente (`npm i -g vercel`).
-*   Conta configurada no Firebase.
+*   [Node.js](https://nodejs.org/) (versão 18 ou superior).
 
 ### Passo a Passo
 
-1.  **Clonar o repositório:**
-    ```bash
-    git clone https://github.com/rafaelpoh/Viajante.git
-    cd Viajante
-    ```
-
-2.  **Instalar dependências (Backend):**
+1.  **Instalar dependências:**
     ```bash
     npm install
     ```
 
-3.  **Configurar variáveis de ambiente (`.env`):**
-    Crie um arquivo `.env` na raiz do projeto com as seguintes chaves de acesso:
-    ```env
-    GEMINI_API_KEY=sua_chave_do_gemini
-    OPENWEATHER_API_KEY=sua_chave_do_openweathermap
-    FIREBASE_PROJECT_ID=id-do-seu-projeto
-    FIREBASE_CLIENT_EMAIL=email-do-client-firebase-admin
-    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
-    ```
+2.  **Configurar variáveis de ambiente (`.env`):**
+    Certifique-se de que o arquivo `.env` na raiz contenha as chaves necessárias para as Serverless Functions (`GEMINI_API_KEY`, `OPENWEATHER_API_KEY`, `FIREBASE_SERVICE_ACCOUNT`).
 
-4.  **Executar o servidor de desenvolvimento:**
-    Inicie a Vercel em modo local para rodar tanto o front-end quanto as serverless functions de forma integrada:
+3.  **Executar o servidor de desenvolvimento:**
     ```bash
     npm run dev
     ```
-    Acesse a aplicação localmente no endereço fornecido pelo terminal (ex: `http://localhost:3000`).
+    Acesse a aplicação no navegador em `http://localhost:5173`.
 
----
-
-## 🛡️ Regras e Padrões de Código
-
-Os contribuidores devem seguir estritamente as diretrizes contidas em [`spec.md`](file:///c:/Users/Pohzin/Documents/GitHub/Viajante/spec.md):
-*   **innerHTML é Proibido:** Para evitar vulnerabilidades XSS, utilize sempre `textContent`, `innerText` ou manipulação manual do DOM através de `document.createElement`.
-*   **CSS Limpo:** Não adicione cores ou tamanhos estáticos diretamente no `skin.css`. Utilize sempre as variáveis declaradas centralizadamente em `css/var.css`.
-*   **Módulos Nativos:** Utilize imports/exports ES Modules nativos no JavaScript.
+4.  **Verificar tipagem e compilar para produção:**
+    ```bash
+    npm run build
+    ```
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT.

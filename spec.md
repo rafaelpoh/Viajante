@@ -1,96 +1,74 @@
 # Project Specification & Development Rules (spec.md)
 
-Este arquivo define os padrões de código, estrutura, segurança e comportamento esperados para este projeto. Ele deve ser lido e seguido estritamente pelo assistente de IA e pelos desenvolvedores.
+Este documento define os padrões arquiteturais, diretrizes de segurança, performance, tipagem estrita e estilo de código para o projeto **Viajante (Planejador de Viagens)**, baseado no guia `/reactspecs` e nos padrões de design **Impeccable**.
 
-## 1. Stack Tecnológico & Limitações
+---
 
-- **Linguagem:** JavaScript (Vanilla ES6+).
-- **Marcação:** HTML5 Semântico.
-- **Estilização:** CSS3.
-- **Restrição Absoluta:** NÃO utilizar frameworks (React, Vue, Angular), bibliotecas de UI (Bootstrap, Tailwind) ou jQuery.
-- **Gerenciamento de Pacotes:** Evitar dependências npm desnecessárias.
+## 1. Stack Tecnológico & Restrições
 
-## 2. Estrutura de Diretórios e Arquivos
+- **Linguagem & Runtime:** TypeScript (ES2022+ com `strict: true` ativado).
+- **Biblioteca de UI:** React 18+ (Componentes Funcionais, Hooks nativos e State Imutável).
+- **Bundler & Dev Server:** Vite.
+- **Estilização:** CSS Modules (`*.module.css`) com Design Tokens nativos em `tokens.css` (:root).
+- **Validação de Esquemas:** Zod para validação em runtime de I/O (contratos com APIs e Firestore).
+- **Mapas Interativos:** Leaflet.js (OpenStreetMap) com ciclo de vida seguro no React.
+- **Autenticação:** Firebase Client SDK (Auth) no frontend; Firebase Admin SDK e Gemini AI nas Serverless Functions (`api/`).
+- **Restrição de Dependências:** Proibido o uso de bibliotecas legadas (jQuery, lodash desnecessário).
 
-O assistente deve identificar o tipo de projeto e aplicar a estrutura correspondente:
+---
 
-### Projetos Web Padrão (Sites/Apps)
+## 2. Estrutura de Diretórios e Arquivos (Feature-Driven & Colocation)
 
 ```text
 / (root)
-├── index.html          # Ponto de entrada
-├── spec.md             # Regras
-├── /assets             # Imagens, ícones
-├── /css                # Estilos
-│   ├── reset.css       # Reset CSS
-│   ├── var.css         # Variáveis (:root)
-│   └── skin.css        # Layout e visual
-└── /js                 # Lógica
-    ├── main.js         # Entry point
-    └── utils.js        # Helpers reutilizáveis
+├── index.html                   # HTML base com <div id="root">
+├── tsconfig.json                # Configurações estritas do TypeScript (strict: true)
+├── tsconfig.node.json           # Configuração de tipos para o bundler Vite
+├── vite.config.ts               # Vite bundler com proxy e manualChunks
+├── package.json                 # Dependências do projeto
+├── PRODUCT.md                   # Registro durável de produto (Impeccable init)
+├── /public                      # Mídias e ativos estáticos
+│   └── /assets
+├── /api                         # Serverless functions Vercel (preservadas)
+└── /src
+    ├── main.tsx                 # Entrada createRoot (React.StrictMode)
+    ├── App.tsx                  # Composição global da aplicação
+    ├── App.module.css           # Estilos do layout mestre
+    ├── /styles                  # tokens.css, reset.css, global.css
+    ├── /components              # Componentes de UI genéricos (Button, Input, Modal, Icons)
+    ├── /features                # Módulos verticais de negócio isolados
+    │   ├── auth/                # Autenticação Firebase (login, registro, sessão)
+    │   ├── plan-creator/        # Criação de planos via IA e validação Zod
+    │   ├── itinerary/           # Exibição do roteiro, dicas, clima e finanças
+    │   ├── saved-plans/         # Histórico de viagens salvas no Firestore
+    │   └── map-view/            # Mapas Leaflet (geolocalização e destino)
+    ├── /types                   # Esquemas Zod e contratos TypeScript (Readonly)
+    └── /utils                   # Funções puras, formatação e erros
 ```
 
-## 3. Padrões de Código & Qualidade (Clean Code)
+---
 
-### 3.1 JavaScript
-- **Modularização:** Utilize import e export (ES Modules) para separar responsabilidades. Não escreva todo o código em um único arquivo gigante.
+## 3. Padrões de Código & Qualidade
+
+- **Princípio da Responsabilidade Única (SRP):** Separação estrita de lógica de apresentação (JSX), lógica de negócio (Custom Hooks) e contratos (Types/Zod).
+- **Proibição do any:** Proibido uso de `any`. Use `unknown` com Type Guards ou tipos genéricos estritos.
+- **Imutabilidade Pura:** O estado do React deve ser estritamente imutável com uso de `Readonly<T>` e `ReadonlyArray<T>`.
 - **Nomenclatura:**
-  - Variáveis e Funções: camelCase (ex: toggleModal, userData).
-  - Constantes: UPPER_SNAKE_CASE (ex: API_BASE_URL, MAX_RETRY_COUNT).
-  - Classes (se usadas): PascalCase.
-- **Princípio DRY (Don't Repeat Yourself):** Se uma lógica for usada mais de duas vezes, extraia para utils.js.
-- **Evitar Poluição Global:** Não declare variáveis no escopo global (window). Use escopos de bloco ou módulos.
+  - Componentes e Interfaces: PascalCase (ex: `PlanForm`, `TravelPlan`).
+  - Hooks: camelCase com prefixo `use` (ex: `useAuth`, `useCreatePlan`).
+  - Manipuladores: prefixo `handle` internamente e `on` em props (ex: `handleSubmitPlan` / `onSubmitPlan`).
+- **Segurança (Anti-XSS):**
+  - Proibido o uso de `dangerouslySetInnerHTML`.
+  - Validação na fronteira via Zod antes de propagar dados para o estado.
+- **Performance & Estabilidade:**
+  - `key` persistente em listas mutáveis (nunca usar índice de array).
+  - Memorização estratégica com `React.memo`, `useCallback` e `useMemo`.
 
-### 3.2 HTML & Acessibilidade (A11y)
-- **Semântica:** Use <header>, <main>, <footer>, <nav>, <article> em vez de <div> genéricas.
-- **Ações:** Botões (<button>) são para ações; Links (<a>) são para navegação. Não confunda os dois.
-- **Mídia:** Imagens devem conter atributo alt.
-- **Formulários:** Todo <input> deve ter um <label> associado via atributo for e id.
-- **Ordem de Carregamento (Crítico):** O CSS deve ser linkado no <head> estritamente nesta ordem:
-  1. reset.css (Limpa estilos do navegador)
-  2. var.css (Define as variáveis)
-  3. skin.css (Aplica o estilo do projeto)
-- **Scripts:** No final do <body> ou com atributo defer.
+---
 
-### 3.3 CSS
-- **Metodologia:** Mantenha o CSS plano (evite aninhamento excessivo).
-- **Nomenclatura:** Prefira nomes de classes descritivos e semânticos (ex: .card-profile, .btn-primary).
-- **Responsividade:** Mobile-first. Use @media (min-width: ...) para telas maiores.
-- **Arquivos:**
-  - `reset.css`: Um reset moderno (ex: Eric Meyer's ou similar minimalista) para remover margens e paddings padrão.
-  - `var.css`: Contém EXCLUSIVAMENTE as variáveis CSS no escopo :root (cores, fontes, espaçamentos). Nenhuma regra de layout deve estar aqui.
-  - `skin.css`: Contém as regras de visual, layout e media queries.
-- **Uso de Variáveis:** Nunca use cores hexadecimais ou pixels arbitrários diretamente em skin.css. Sempre consuma as variáveis definidas em var.css (ex: color: var(--primary-color)).
+## 4. Padrões de Design e Superfícies (Impeccable Craft Floor)
 
-## 4. Segurança (Crítico)
-- **Prevenção de XSS (Cross-Site Scripting):**
-  - **PROIBIDO:** O uso de innerHTML para renderizar dados vindos de inputs do usuário ou APIs externas.
-  - **OBRIGATÓRIO:** Use textContent ou innerText para textos.
-  - **CRIAÇÃO DOM:** Para elementos complexos, use document.createElement(), configure atributos e faça appendChild().
-- **Validação de Input:** Nunca confie no input do usuário. Valide tipos e formatos antes de processar qualquer lógica.
-- **Dados Sensíveis:** Nunca commitar chaves de API, tokens ou credenciais no código fonte.
-
-## 5. Performance
-- **DOM Caching:** Armazene referências a elementos do DOM em variáveis (const btn = document.querySelector(...)) fora de loops ou funções de eventos repetitivos.
-- **Event Delegation:** Ao manipular listas (ex: <ul>), adicione o listener no elemento pai e identifique o alvo via event.target, ao invés de adicionar um listener para cada <li>.
-- **Scripts:** Carregue scripts com o atributo defer ou no final do <body> para não bloquear a renderização inicial.
-
-## 6. Regras Específicas para Extensões (Manifest V3)
-*(Não aplicável para este projeto web padrão)*
-
-## 7. Meta-Instruções para o Assistente AI
-- **Leitura de Estilo:** Ao criar novos estilos, sempre verifique primeiro o arquivo var.css para reutilizar as variáveis existentes. Se uma nova cor for necessária, sugira a adição dela em var.css primeiro.
-- **Geração de HTML:** Ao criar o esqueleto HTML, certifique-se de incluir os links na ordem exata:
-  ```html
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/var.css">
-  <link rel="stylesheet" href="css/skin.css">
-  ```
-- **Análise Prévia:** Antes de gerar qualquer código, verifique se a solução proposta viola alguma regra de segurança (especialmente a regra 4).
-- **Validação:** Verifique se nenhuma regra de segurança (especialmente innerHTML) foi violada antes de entregar a resposta.
-- **Verificação de Contexto:** Antes de criar uma nova função, verifique se algo similar já não existe em utils.js para evitar redundância.
-- **Saída:** Ao fornecer código, priorize a estrutura de arquivos definida na seção 2. Se o código for longo, instrua onde cada parte deve ser salva.
-
-## 8. Git & Versionamento
-- **Autonomia Zero:** O assistente está estritamente proibido de realizar commits, pushs ou quaisquer alterações diretas no repositório git por conta própria.
-- **Sugestões:** O assistente pode sugerir mensagens de commit ou comandos git para o usuário executar no terminal, mas a execução final é responsabilidade exclusiva do usuário.
+- **Contraste:** Texto base ≥ 4.5:1, textos grandes ≥ 3:1.
+- **Superfícies Nativas:** Estilização de `::selection`, `caret-color`, scrollbars customizados e anel de foco acessível `:focus-visible`.
+- **Ícones Vetoriais:** Ícones SVG autorados em traço consistente de 2px (sem emojis para ícones de sistema).
+- **Design Tokens:** Nenhuma cor, espaçamento ou raio hardcoded no CSS; tudo centralizado em `tokens.css`.
